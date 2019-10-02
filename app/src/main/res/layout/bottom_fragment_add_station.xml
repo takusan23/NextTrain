@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="上り、下りとは？\n新宿方面→上り\n八王子方面→下り" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/bottom_fragment_add_station_up_url_textinput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="上りURL" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/bottom_fragment_add_station_down_url_textinput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="下りURL" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/bottom_fragment_add_station_add_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="追加" />
+</LinearLayout>
