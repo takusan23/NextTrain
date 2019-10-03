@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_train_info_up"
+        android:icon="@drawable/ic_arrow_upward_black_24dp"
+        android:title="上り" />
+    <item
+        android:id="@+id/menu_train_info_down"
+        android:icon="@drawable/ic_arrow_downward_black_24dp"
+        android:title="下り" />
+</menu>

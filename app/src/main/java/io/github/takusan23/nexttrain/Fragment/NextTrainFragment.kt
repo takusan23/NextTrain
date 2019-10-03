@@ -32,8 +32,7 @@ class NextTrainFragment : Fragment() {
     lateinit var helper: StationSQLiteHelper
     lateinit var db: SQLiteDatabase
 
-    //並び順。非同期処理なのでどうしても合わなくなる
-
+    val trainTimeTableList = arrayListOf<TrainTimeTable>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,6 +63,7 @@ class NextTrainFragment : Fragment() {
     fun setNextTrain() {
 
         nextTrainList.clear()
+        trainTimeTableList.clear()
 
         //くるくる
         fragment_next_train_swipe.isRefreshing = true
@@ -99,6 +99,8 @@ class NextTrainFragment : Fragment() {
                     )
                     val arrayList = arrayListOf<String>()
                     arrayList.add("")
+                    arrayList.add(up)
+                    arrayList.add(down)
                     arrayList.add(trainTimeTable.stationName)
                     arrayList.add(trainTimeTable.upNextTime)
                     arrayList.add(trainTimeTable.downNextTime)
@@ -107,6 +109,7 @@ class NextTrainFragment : Fragment() {
                     arrayList.add(trainTimeTable.upTrainFor)
                     arrayList.add(trainTimeTable.downTrainFor)
                     nextTrainList.add(arrayList)
+                    trainTimeTableList.add(trainTimeTable)
                     //次に進む
                     cursor.moveToNext()
                 }.await()

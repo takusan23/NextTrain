@@ -98,7 +98,7 @@ class StationListFragment : Fragment() {
         //Step 2.SQLite更新
         //最初にDB全クリアする
         db.delete("station_db", null, null)
-        println(name_List)
+        //println(name_List)
         for (i in 0 until name_List.size) {
             writeSQLiteDB(name_List[i], upList[i], downList[i], settingList[i])
         }

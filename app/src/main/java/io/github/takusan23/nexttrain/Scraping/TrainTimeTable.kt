@@ -3,11 +3,13 @@ package io.github.takusan23.nexttrain.Scraping
 import android.content.Context
 import android.os.Handler
 import android.widget.Toast
+import androidx.core.net.toUri
 import okhttp3.*
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 class TrainTimeTable {
 
@@ -32,6 +34,28 @@ class TrainTimeTable {
 
     //駅名
     var stationName = ""
+
+
+    //時刻表の時間別の配列が入った配列
+    //例：[["10","20"],["10","20"]]
+    val upTrainTimeTableListList = arrayListOf<ArrayList<String>>()
+    //時刻表の時間別の配列が入った配列の中の電車の種類（特急・区間急行）等の配列
+    //上の時刻表と同じ構造です。
+    //例：[["特","区"],["特"]]
+    val upTrainTimeTableListTypeList = arrayListOf<ArrayList<String>>()
+    //時刻表の時間別の配列が入った配列の中の電車の行き先（高尾山口）等の配列
+    //上の時刻表と同じ構造です。
+    //例：[["山"],[""]]
+    val upTrainTimeTableListForList = arrayListOf<ArrayList<String>>()
+    //時刻表の時間別の配列が入った配列の中の時間を入れるだけの配列
+    //例：["4","5"]
+    val upTrainTimeTableListHourList = arrayListOf<String>()
+
+    //それから下りVerも用意する
+    val downTrainTimeTableListList = arrayListOf<ArrayList<String>>()
+    val downTrainTimeTableListTypeList = arrayListOf<ArrayList<String>>()
+    val downTrainTimeTableListForList = arrayListOf<ArrayList<String>>()
+    val downTrainTimeTableListHourList = arrayListOf<String>()
 
     /**
      * 時刻表をスクレイピングする
@@ -61,7 +85,7 @@ class TrainTimeTable {
                     trainType.forEach {
                         //println(it.text())
                     }
-                    println("すくれいぴんぐ")
+                    //println("すくれいぴんぐ")
                 }
             }
         }
@@ -88,15 +112,34 @@ class TrainTimeTable {
         var tmpType = ""
         var tmpFor = ""
 
+        val date = Calendar.getInstance()
+        //平日・土曜・日曜に対応させる
+        //祝日は無理だな
+        val dayOfWeek = date.get(Calendar.DAY_OF_WEEK)
+        var parameter = "1"
+        when (dayOfWeek) {
+            Calendar.SATURDAY -> {
+                //土曜
+                parameter = "2"
+            }
+            Calendar.SUNDAY -> {
+                //日曜
+                parameter = "4"
+            }
+        }
+        //URLつなげる
+        val uri = url.toUri().buildUpon()
+        uri.appendQueryParameter("kind", parameter)
+
         //UIスレッド
-        val document = Jsoup.connect(url)
+        val document = Jsoup.connect(uri.build().toString())
             .get()
+
         //取り出す
         val tr = document.getElementsByTag("tr")
         tr.forEach {
             val trForeach = it
             //今の時間を出す
-            val date = Calendar.getInstance()
             val hour = date.get(Calendar.HOUR_OF_DAY)
             val minute = date.get(Calendar.MINUTE)
             //  val hour = 7
@@ -178,6 +221,57 @@ class TrainTimeTable {
             }
         }
 
+        //配列作る
+        //縦の列
+        // ・ ↓
+        // ・ ↓
+        // ・ ↓
+        val table = document.getElementsByTag("tr")
+        table.forEach {
+            //一つぶん
+            //横
+            // ・→・→・
+            val item = it.getElementsByClass("timeNumb")
+            //時間
+            var hour = ""
+            if (it.getElementsByClass("hour").text() != "時") {
+                hour = it.getElementsByClass("hour").text()
+            }
+            //println(hour)
+            //それぞれ配列作る
+            val trainTimeList = arrayListOf<String>()
+            val trainTypeList = arrayListOf<String>()
+            val trainForList = arrayListOf<String>()
+            item.forEach {
+                //時間
+                val time = it.getElementsByTag("dt")[0].text()
+                //特急・区間・各駅とか
+                val type = it.getElementsByClass("trainType").text()
+                //行き先
+                val trainFor = it.getElementsByClass("trainFor").text()
+
+                trainTimeList.add(time)
+                trainTypeList.add(type)
+                trainForList.add(trainFor)
+
+                // println("${hour}時 ${time}分  ${type} / ${trainFor}")
+
+            }
+            if (boolean) {
+                //上り
+                upTrainTimeTableListList.add(trainTimeList)
+                upTrainTimeTableListTypeList.add(trainTypeList)
+                upTrainTimeTableListForList.add(trainForList)
+                upTrainTimeTableListHourList.add(hour)
+            } else {
+                //下り
+                downTrainTimeTableListList.add(trainTimeList)
+                downTrainTimeTableListTypeList.add(trainTypeList)
+                downTrainTimeTableListForList.add(trainForList)
+                downTrainTimeTableListHourList.add(hour)
+            }
+        }
+
         if (boolean) {
             //次の電車
             upNextTime = nextTrainTime
@@ -192,7 +286,6 @@ class TrainTimeTable {
 
         //名前
         stationName = document.getElementsByClass("title")[1].text()
-
     }
 
 }
