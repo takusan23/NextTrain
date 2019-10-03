@@ -60,6 +60,8 @@ class NextTrainFragment : Fragment() {
 
     fun setNextTrain() {
 
+        nextTrainList.clear()
+
         //くるくる
         fragment_next_train_swipe.isRefreshing = true
 
@@ -103,6 +105,8 @@ class NextTrainFragment : Fragment() {
                     arrayList.add(trainTimeTable.downNextTime)
                     nextTrainList.add(arrayList)
                     adapter.notifyDataSetChanged()
+
+                    println("次の電車は：${trainTimeTable.downNextTime}")
 
                     //くるくる
                     fragment_next_train_swipe.isRefreshing = false

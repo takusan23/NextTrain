@@ -18,9 +18,12 @@ class TrainTimeTable {
 
     //上り
     var upNextTime = ""
+    //特急か区間急行とか
+    var upTrainType = ""
 
     //下り
     var downNextTime = ""
+    var downTrainType = ""
 
     //駅名
     var stationName = ""
@@ -76,6 +79,8 @@ class TrainTimeTable {
         //大小比較のために
         var timeTemp = 100
 
+        var tmpType = ""
+
         //UIスレッド
         val document = Jsoup.connect(url)
             .get()
@@ -84,7 +89,7 @@ class TrainTimeTable {
         tr.forEach {
             //今の時間を出す
             val date = Calendar.getInstance()
-            val hour = date.get(Calendar.HOUR)
+            val hour = date.get(Calendar.HOUR_OF_DAY)
             val minute = date.get(Calendar.MINUTE)
             //  val hour = 7
             //  val minute = 45
@@ -105,6 +110,44 @@ class TrainTimeTable {
                     if (matcher.find()) {
                         //数字だけとった
                         trainTime = matcher.group()
+
+
+/*
+                        //この時間にはない
+                        //7:55 -> 8:00
+                        if ((trainTime.toInt()) < minute) {
+                            //時間を足す
+                            val id = "hh_${hour + 1}"
+                            if (it.id() == id) {
+                                //次に来る電車を求める
+                                val li = it.getElementsByClass("timeNumb")
+                                li.forEach {
+                                    var trainTime = it.getElementsByTag("dt")[0].text()
+                                    //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
+                                    val pattern = Pattern.compile("[0-9０-９]+")
+                                    val matcher = pattern.matcher(trainTime)
+                                    if (matcher.find()) {
+                                        //数字だけとった
+                                        trainTime = matcher.group()
+                                        ///引き算して最も低い値が次の電車なのでは
+                                        val tmp = (trainTime.toInt()) - minute
+                                        //値が負の値になってる場合は手遅れ
+                                        if (0 < tmp) {
+                                            if (timeTemp > tmp) {
+                                                timeTemp = tmp
+                                                nextTrainTime = "${hour}:$trainTime"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+
+                        } else {
+
+                        }
+*/
+
                         //引き算して最も低い値が次の電車なのでは
                         val tmp = (trainTime.toInt()) - minute
                         //値が負の値になってる場合は手遅れ
@@ -114,6 +157,7 @@ class TrainTimeTable {
                                 nextTrainTime = "${hour}:$trainTime"
                             }
                         }
+
                     }
                 }
             }
