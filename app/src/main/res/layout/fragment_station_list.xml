@@ -6,10 +6,36 @@
     android:orientation="vertical"
     tools:context=".Fragment.StationListFragment">
 
-
-    <Button
-        android:id="@+id/fragment_station_list_add_button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="駅追加" />
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/fragment_station_list_add_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="駅追加" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="並び替え" />
+
+        <com.woxthebox.draglistview.DragListView
+            android:id="@+id/drag_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
 </LinearLayout>

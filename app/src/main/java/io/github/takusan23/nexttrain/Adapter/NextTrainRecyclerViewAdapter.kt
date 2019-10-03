@@ -29,10 +29,15 @@ class NextTrainRecyclerViewAdapter(var list: ArrayList<ArrayList<String>>) :
         val name = item[1]
         val upTime = item[2]
         val downTime = item[3]
+        val upTrainType = item[4]
+        val downTrainType = item[5]
+        val upTrainFor = item[6]
+        val downTrainFor = item[7]
 
         //駅名
         holder.nameTextView.text = name
         holder.timeTextView.text = upTime
+        holder.typeForTextView.text = "$upTrainType $upTrainFor"
 
         //切り替える
         holder.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -49,9 +54,11 @@ class NextTrainRecyclerViewAdapter(var list: ArrayList<ArrayList<String>>) :
                 when (tab?.text ?: "上り") {
                     "上り" -> {
                         holder.timeTextView.text = upTime
+                        holder.typeForTextView.text = "$upTrainType $upTrainFor"
                     }
                     "下り" -> {
                         holder.timeTextView.text = downTime
+                        holder.typeForTextView.text = "$downTrainType $downTrainFor"
                     }
                 }
             }
@@ -62,6 +69,8 @@ class NextTrainRecyclerViewAdapter(var list: ArrayList<ArrayList<String>>) :
         var nameTextView =
             itemView.findViewById<TextView>(R.id.adapter_next_train_station_name_textview)
         var timeTextView = itemView.findViewById<TextView>(R.id.adapter_next_train_time_textview)
+        var typeForTextView =
+            itemView.findViewById<TextView>(R.id.adapter_next_train_type_for_textview)
         var tabLayout = itemView.findViewById<TabLayout>(R.id.adapter_next_train_tab_layout)
     }
 

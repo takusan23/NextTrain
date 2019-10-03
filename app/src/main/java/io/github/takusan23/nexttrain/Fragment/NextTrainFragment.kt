@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.takusan23.nexttrain.Adapter.NextTrainRecyclerViewAdapter
 import io.github.takusan23.nexttrain.DataBase.StationSQLiteHelper
@@ -18,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_next_train.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 
 
 /**
@@ -31,6 +31,9 @@ class NextTrainFragment : Fragment() {
     //でーたべーす
     lateinit var helper: StationSQLiteHelper
     lateinit var db: SQLiteDatabase
+
+    //並び順。非同期処理なのでどうしても合わなくなる
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -75,7 +78,7 @@ class NextTrainFragment : Fragment() {
         //取り出し
         val cursor = db.query(
             "station_db",
-            arrayOf("up", "down"),
+            arrayOf("up", "down", "name"),
             null,
             null,
             null,
@@ -83,6 +86,41 @@ class NextTrainFragment : Fragment() {
             null
         )
         cursor.moveToFirst()
+        GlobalScope.launch {
+            for (i in 0 until cursor.count) {
+                //リクエスト
+                val up = cursor.getString(0)
+                val down = cursor.getString(1)
+                val trainTimeTable = TrainTimeTable()
+                //スクレイピングできるまで待つ
+                async {
+                    trainTimeTable.getNextTrain(
+                        up, down
+                    )
+                    val arrayList = arrayListOf<String>()
+                    arrayList.add("")
+                    arrayList.add(trainTimeTable.stationName)
+                    arrayList.add(trainTimeTable.upNextTime)
+                    arrayList.add(trainTimeTable.downNextTime)
+                    arrayList.add(trainTimeTable.upTrainType)
+                    arrayList.add(trainTimeTable.downTrainType)
+                    arrayList.add(trainTimeTable.upTrainFor)
+                    arrayList.add(trainTimeTable.downTrainFor)
+                    nextTrainList.add(arrayList)
+                    //次に進む
+                    cursor.moveToNext()
+                }.await()
+            }
+            activity?.runOnUiThread {
+                adapter.notifyDataSetChanged()
+                //くるくる
+                fragment_next_train_swipe.isRefreshing = false
+                //閉じる
+                cursor.close()
+            }
+        }
+
+/*
         for (i in 0 until cursor.count) {
             //リクエスト
             val up = cursor.getString(0)
@@ -103,18 +141,19 @@ class NextTrainFragment : Fragment() {
                     arrayList.add(trainTimeTable.stationName)
                     arrayList.add(trainTimeTable.upNextTime)
                     arrayList.add(trainTimeTable.downNextTime)
+                    arrayList.add(trainTimeTable.upTrainType)
+                    arrayList.add(trainTimeTable.downTrainType)
+                    arrayList.add(trainTimeTable.upTrainFor)
+                    arrayList.add(trainTimeTable.downTrainFor)
                     nextTrainList.add(arrayList)
                     adapter.notifyDataSetChanged()
-
-                    println("次の電車は：${trainTimeTable.downNextTime}")
-
                     //くるくる
                     fragment_next_train_swipe.isRefreshing = false
                 }
             }
             cursor.moveToNext()
         }
-        cursor.close()
+*/
 
     }
 

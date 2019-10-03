@@ -20,10 +20,15 @@ class TrainTimeTable {
     var upNextTime = ""
     //特急か区間急行とか
     var upTrainType = ""
+    //行き先（高尾山口　など）
+    var upTrainFor = ""
 
     //下り
     var downNextTime = ""
+    //特急か区間急行とか
     var downTrainType = ""
+    //行き先（高尾山口　など）
+    var downTrainFor = ""
 
     //駅名
     var stationName = ""
@@ -73,13 +78,15 @@ class TrainTimeTable {
 
     //boolean -> true 上り
     //boolean -> false 下り
-    private fun getNextTrain(url: String, boolean: Boolean) {
+    fun getNextTrain(url: String, boolean: Boolean) {
         //時刻
         var nextTrainTime = ""
         //大小比較のために
         var timeTemp = 100
 
+        //一時的に特急・区間急行 / 行き先を保存しておく
         var tmpType = ""
+        var tmpFor = ""
 
         //UIスレッド
         val document = Jsoup.connect(url)
@@ -87,6 +94,7 @@ class TrainTimeTable {
         //取り出す
         val tr = document.getElementsByTag("tr")
         tr.forEach {
+            val trForeach = it
             //今の時間を出す
             val date = Calendar.getInstance()
             val hour = date.get(Calendar.HOUR_OF_DAY)
@@ -103,7 +111,13 @@ class TrainTimeTable {
                 //次に来る電車を求める
                 val li = it.getElementsByClass("timeNumb")
                 li.forEach {
+                    //時間
                     var trainTime = it.getElementsByTag("dt")[0].text()
+                    // 特急・区間急行など
+                    val trainType = it.getElementsByClass("trainType")
+                    //行き先？
+                    val trainFor = it.getElementsByClass("trainFor")
+
                     //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
                     val pattern = Pattern.compile("[0-9０-９]+")
                     val matcher = pattern.matcher(trainTime)
@@ -111,18 +125,21 @@ class TrainTimeTable {
                         //数字だけとった
                         trainTime = matcher.group()
 
-
-/*
                         //この時間にはない
                         //7:55 -> 8:00
-                        if ((trainTime.toInt()) < minute) {
+                        if ((trainTime.toInt()) <= minute) {
                             //時間を足す
                             val id = "hh_${hour + 1}"
-                            if (it.id() == id) {
+                            if (trForeach.id() == id) {
                                 //次に来る電車を求める
-                                val li = it.getElementsByClass("timeNumb")
+                                val li = trForeach.getElementsByClass("timeNumb")
                                 li.forEach {
+                                    //時間
                                     var trainTime = it.getElementsByTag("dt")[0].text()
+                                    // 特急・区間急行など
+                                    val trainType = it.getElementsByClass("trainType")
+                                    //行き先？
+                                    val trainFor = it.getElementsByClass("trainFor")
                                     //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
                                     val pattern = Pattern.compile("[0-9０-９]+")
                                     val matcher = pattern.matcher(trainTime)
@@ -136,28 +153,26 @@ class TrainTimeTable {
                                             if (timeTemp > tmp) {
                                                 timeTemp = tmp
                                                 nextTrainTime = "${hour}:$trainTime"
+                                                tmpFor = trainFor.text()
+                                                tmpType = trainType.text()
                                             }
                                         }
                                     }
                                 }
                             }
-
-
                         } else {
-
-                        }
-*/
-
-                        //引き算して最も低い値が次の電車なのでは
-                        val tmp = (trainTime.toInt()) - minute
-                        //値が負の値になってる場合は手遅れ
-                        if (0 < tmp) {
-                            if (timeTemp > tmp) {
-                                timeTemp = tmp
-                                nextTrainTime = "${hour}:$trainTime"
+                            //引き算して最も低い値が次の電車なのでは
+                            val tmp = (trainTime.toInt()) - minute
+                            //値が負の値になってる場合は手遅れ
+                            if (0 < tmp) {
+                                if (timeTemp > tmp) {
+                                    timeTemp = tmp
+                                    nextTrainTime = "${hour}:$trainTime"
+                                    tmpFor = trainFor.text()
+                                    tmpType = trainType.text()
+                                }
                             }
                         }
-
                     }
                 }
             }
@@ -166,9 +181,13 @@ class TrainTimeTable {
         if (boolean) {
             //次の電車
             upNextTime = nextTrainTime
+            upTrainType = tmpType
+            upTrainFor = tmpFor
         } else {
             //次の電車
             downNextTime = nextTrainTime
+            downTrainType = tmpType
+            downTrainFor = tmpFor
         }
 
         //名前
