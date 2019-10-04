@@ -47,11 +47,10 @@
 
                 </com.google.android.material.tabs.TabLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/activity_train_info_recyclerview"
+                <androidx.viewpager.widget.ViewPager
+                    android:id="@+id/activity_train_info_viewpager"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_height="match_parent"/>
 
             </LinearLayout>
 
