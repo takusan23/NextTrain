@@ -2,18 +2,19 @@ package io.github.takusan23.nexttrain
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
-import io.github.takusan23.nexttrain.Adapter.NextTrainRecyclerViewAdapter
 import io.github.takusan23.nexttrain.Adapter.TrainInfoAdapter
 import io.github.takusan23.nexttrain.Scraping.TrainTimeTable
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_train_info.*
 import kotlinx.android.synthetic.main.adapter_next_train_layout.*
-import kotlinx.android.synthetic.main.fragment_next_train.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
 
 class TrainInfoActivity : AppCompatActivity() {
 
@@ -32,6 +33,15 @@ class TrainInfoActivity : AppCompatActivity() {
 
         //タイトルバー非表示
         supportActionBar?.hide()
+
+        //Intentから受け取る
+        val intentStationName = intent.getStringExtra("name")
+        val intentStationTime = intent.getStringExtra("time")
+        val intentStationDescription = intent.getStringExtra("description")
+        adapter_next_train_station_name_textview.text = intentStationName
+        adapter_next_train_time_textview.text = intentStationTime
+        adapter_next_train_type_for_textview.text = intentStationDescription
+
 
         //recyclerview
         activity_train_info_recyclerview.setHasFixedSize(true)
@@ -87,10 +97,20 @@ class TrainInfoActivity : AppCompatActivity() {
                     }
                 }
 
+                //取得成功したら表示をVisibleに切り替える
+                //表示アニメーションに挑戦した。
+                val showAnimation =
+                    AnimationUtils.loadAnimation(this@TrainInfoActivity, R.anim.show_anim)
+                activity_train_info_card_info_cardview.startAnimation(showAnimation)
+                activity_train_info_card_info_cardview.visibility = View.VISIBLE
+
                 //タイトル変更
                 supportActionBar?.title = trainTimeTable.stationName
                 //Cardの部分を作る
                 setCard()
+
+                //今の時間の時刻表を表示させる
+                setNowHourTimeTable()
 
                 //時間（スクロールするやつ）押したとき
                 activity_train_info_tab_layout.addOnTabSelectedListener(object :
@@ -160,7 +180,66 @@ class TrainInfoActivity : AppCompatActivity() {
         }
     }
 
+    private fun setNowHourTimeTable() {
+        val calender = Calendar.getInstance()
+        val hour = calender.get(Calendar.HOUR_OF_DAY)
+        val tabLayoutPos = adapter_next_train_tab_layout.selectedTabPosition
+        //tabを選択
+        for (count in 0 until activity_train_info_tab_layout.tabCount) {
+            if (activity_train_info_tab_layout.getTabAt(count)?.text.toString() == hour.toString() + "時") {
+                //選択
+                activity_train_info_tab_layout.getTabAt(count)?.select()
+            }
+        }
+        if (tabLayoutPos == 0) {
+            //上り
+            for (s in 0 until trainTimeTable.upTrainTimeTableListHourList.size) {
+                if (trainTimeTable.upTrainTimeTableListHourList[s] == hour.toString()) {
+                    //配列取得
+                    val trainList = trainTimeTable.upTrainTimeTableListList[s]
+                    //特急
+                    val trainType = trainTimeTable.upTrainTimeTableListTypeList[s]
+                    //行き先
+                    val trainFor = trainTimeTable.upTrainTimeTableListForList[s]
+                    //指定した時間の時刻表を入れる
+                    for (i in 0 until trainList.size) {
+                        val list = arrayListOf<String>()
+                        list.add("")
+                        list.add("${hour}時${trainList[i]}分")
+                        list.add("${trainType[i]} ${trainFor[i]}")
+                        nextTrainList.add(list)
+                    }
+                }
+            }
+        } else {
+            //下り
+            for (s in 0 until trainTimeTable.downTrainTimeTableListHourList.size) {
+                if (trainTimeTable.downTrainTimeTableListHourList[s] == hour.toString()) {
+                    //配列取得
+                    val trainList = trainTimeTable.downTrainTimeTableListList[s]
+                    //特急
+                    val trainType = trainTimeTable.downTrainTimeTableListTypeList[s]
+                    //行き先
+                    val trainFor = trainTimeTable.downTrainTimeTableListForList[s]
+                    //指定した時間の時刻表を入れる
+                    for (i in 0 until trainList.size) {
+                        val list = arrayListOf<String>()
+                        list.add("")
+                        list.add("${hour}時${trainList[i]}分")
+                        list.add("${trainType[i]} ${trainFor[i]}")
+                        nextTrainList.add(list)
+                    }
+                }
+            }
+        }
+
+    }
+
+
     private fun setCard() {
         adapter_next_train_station_name_textview.text = trainTimeTable.stationName
+        adapter_next_train_time_textview.text = trainTimeTable.upNextTime
+        adapter_next_train_type_for_textview.text =
+            "${trainTimeTable.upTrainType} ${trainTimeTable.upTrainFor}"
     }
 }

@@ -87,6 +87,9 @@ class NextTrainRecyclerViewAdapter(var list: ArrayList<ArrayList<String>>) :
                         "card"
                     )
                     val intent = Intent(context, TrainInfoActivity::class.java)
+                    intent.putExtra("name",name)
+                    intent.putExtra("time",holder.timeTextView.text.toString())
+                    intent.putExtra("description",holder.typeForTextView.text.toString())
                     intent.putExtra("up", up)
                     intent.putExtra("down", down)
                     context.startActivity(intent, compat.toBundle())
