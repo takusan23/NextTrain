@@ -220,54 +220,19 @@ class TrainInfoActivity : AppCompatActivity() {
         val hour = calender.get(Calendar.HOUR_OF_DAY)
         val tabLayoutPos = adapter_next_train_tab_layout.selectedTabPosition
         //tabを選択
+        //ViewPagerのカウント用
+        var viewCount = 0
         for (count in 0 until activity_train_info_tab_layout.tabCount) {
             if (activity_train_info_tab_layout.getTabAt(count)?.text.toString() == hour.toString() + "時") {
+                viewCount += 1
                 //選択
                 activity_train_info_tab_layout.getTabAt(count)?.select()
-            }
-        }
-        if (tabLayoutPos == 0) {
-            //上り
-            for (s in 0 until trainTimeTable.upTrainTimeTableListHourList.size) {
-                if (trainTimeTable.upTrainTimeTableListHourList[s] == hour.toString()) {
-                    //配列取得
-                    val trainList = trainTimeTable.upTrainTimeTableListList[s]
-                    //特急
-                    val trainType = trainTimeTable.upTrainTimeTableListTypeList[s]
-                    //行き先
-                    val trainFor = trainTimeTable.upTrainTimeTableListForList[s]
-                    //指定した時間の時刻表を入れる
-                    for (i in 0 until trainList.size) {
-                        val list = arrayListOf<String>()
-                        list.add("")
-                        list.add("${hour}時${trainList[i]}分")
-                        list.add("${trainType[i]} ${trainFor[i]}")
-                        // nextTrainList.add(list)
-                    }
-                }
-            }
-        } else {
-            //下り
-            for (s in 0 until trainTimeTable.downTrainTimeTableListHourList.size) {
-                if (trainTimeTable.downTrainTimeTableListHourList[s] == hour.toString()) {
-                    //配列取得
-                    val trainList = trainTimeTable.downTrainTimeTableListList[s]
-                    //特急
-                    val trainType = trainTimeTable.downTrainTimeTableListTypeList[s]
-                    //行き先
-                    val trainFor = trainTimeTable.downTrainTimeTableListForList[s]
-                    //指定した時間の時刻表を入れる
-                    for (i in 0 until trainList.size) {
-                        val list = arrayListOf<String>()
-                        list.add("")
-                        list.add("${hour}時${trainList[i]}分")
-                        list.add("${trainType[i]} ${trainFor[i]}")
-                        // nextTrainList.add(list)
-                    }
-                }
-            }
-        }
 
+                activity_train_info_viewpager.postDelayed({
+                    activity_train_info_viewpager.setCurrentItem(viewCount, true)
+                }, 100)
+            }
+        }
     }
 
 
