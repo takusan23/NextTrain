@@ -57,6 +57,11 @@ class TrainTimeTable {
     val downTrainTimeTableListForList = arrayListOf<ArrayList<String>>()
     val downTrainTimeTableListHourList = arrayListOf<String>()
 
+    //次の時間の時刻表が必要？
+    //例：18時にはもう電車ないので次の19時に
+    var isNextTimeTable = false
+
+
     /**
      * 時刻表をスクレイピングする
      * これはUIスレッドで呼ばないで下さい。インターネット通信を行うので。
@@ -112,9 +117,6 @@ class TrainTimeTable {
         var tmpType = ""
         var tmpFor = ""
 
-        //次の時間？一時的に
-        var tmpNextTime = 0
-
         val date = Calendar.getInstance()
         //平日・土曜・日曜に対応させる
         //祝日は無理だな
@@ -132,10 +134,10 @@ class TrainTimeTable {
         }
 
         //今の時間を出す
-        val hour = date.get(Calendar.HOUR_OF_DAY)
-        val minute = date.get(Calendar.MINUTE)
-        //  val hour = 17
-        //  val minute = 58
+        var hour = date.get(Calendar.HOUR_OF_DAY)
+        var minute = date.get(Calendar.MINUTE)
+        //  hour = 18
+        //  minute = 58
 
         //URLつなげる
         val uri = url.toUri().buildUpon()
@@ -176,7 +178,7 @@ class TrainTimeTable {
                         //引き算して最も低い値が次の電車なのでは
                         val tmp = (trainTime.toInt()) - minute
                         //値が負の値になってる場合は手遅れ
-                        if (0 < tmp) {
+                        if (0 <= tmp) {
                             if (timeTemp > tmp) {
                                 timeTemp = tmp
                                 //一桁は先頭に0を入れる
@@ -187,47 +189,49 @@ class TrainTimeTable {
                                 tmpFor = trainFor.text()
                                 tmpType = trainType.text()
                             }
-                        } else if (nextTrainTime.isEmpty()) {
-                            //この時間にはない
-                            //7:55 -> 8:00
-                            timeTemp = 100
-                            //時間を足す
-                            val id = "hh_${hour + 1}"
-                            val tr = document.getElementsByTag("tr")
-                            tr.forEach {
-                                if (it.id() == id) {
-                                    //次に来る電車を求める
-                                    val li = it.getElementsByClass("timeNumb")
-                                    li.forEach {
-                                        //時間
-                                        var trainTime = it.getElementsByTag("dt")[0].text()
-                                        // 特急・区間急行など
-                                        val trainType = it.getElementsByClass("trainType")
-                                        //行き先？
-                                        val trainFor = it.getElementsByClass("trainFor")
-                                        //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
-                                        val pattern = Pattern.compile("[0-9０-９]+")
-                                        val matcher = pattern.matcher(trainTime)
-                                        if (matcher.find()) {
-                                            //数字だけとった
-                                            trainTime = matcher.group()
-                                            ///次の時間の一番最初の電車
-                                            val tmp = (trainTime.toInt())
-                                            //値が負の値になってる場合は手遅れ
-                                            if (0 <= tmp) {
-                                                if (timeTemp > tmp) {
-                                                    timeTemp = tmp
-                                                    //一桁は先頭に0を入れる
-                                                    if (trainTime.length == 1) {
-                                                        trainTime = "0$trainTime"
-                                                    }
-                                                    nextTrainTime = "${hour + 1}:$trainTime"
-                                                    tmpFor = trainFor.text()
-                                                    tmpType = trainType.text()
-                                                }
-                                            }
-                                        }
+                        }
+                    }
+                }
+            }
+        }
+        if (nextTrainTime.isEmpty()) {
+            isNextTimeTable = true
+            //この時間にはない
+            //7:55 -> 8:00
+            timeTemp = 100
+            //時間を足す
+            val id = "hh_${hour + 1}"
+            val tr = document.getElementsByTag("tr")
+            tr.forEach {
+                if (it.id() == id) {
+                    //次に来る電車を求める
+                    val li = it.getElementsByClass("timeNumb")
+                    li.forEach {
+                        //時間
+                        var trainTime = it.getElementsByTag("dt")[0].text()
+                        // 特急・区間急行など
+                        val trainType = it.getElementsByClass("trainType")
+                        //行き先？
+                        val trainFor = it.getElementsByClass("trainFor")
+                        //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
+                        val pattern = Pattern.compile("[0-9０-９]+")
+                        val matcher = pattern.matcher(trainTime)
+                        if (matcher.find()) {
+                            //数字だけとった
+                            trainTime = matcher.group()
+                            ///次の時間の一番最初の電車
+                            val tmp = (trainTime.toInt())
+                            //値が負の値になってる場合は手遅れ
+                            if (0 <= tmp) {
+                                if (timeTemp > tmp) {
+                                    timeTemp = tmp
+                                    //一桁は先頭に0を入れる
+                                    if (trainTime.length == 1) {
+                                        trainTime = "0$trainTime"
                                     }
+                                    nextTrainTime = "${hour + 1}:$trainTime"
+                                    tmpFor = trainFor.text()
+                                    tmpType = trainType.text()
                                 }
                             }
                         }

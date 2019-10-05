@@ -75,7 +75,6 @@ class NextTrainTimeQSTile : TileService() {
                     qsTile.state = Tile.STATE_INACTIVE
                     qsTile.updateTile()
                 }.await()
-                cursor.moveToNext()
             }
             cursor.close()
         }
@@ -91,7 +90,7 @@ class NextTrainTimeQSTile : TileService() {
 
         //今の時間。Hour
         val calender = Calendar.getInstance()
-        val hour = calender.get(Calendar.HOUR_OF_DAY)
+        var hour = calender.get(Calendar.HOUR_OF_DAY)
 
         val notificationManager = NotificationManagerCompat.from(applicationContext)
         //通知チャンネル
@@ -105,6 +104,11 @@ class NextTrainTimeQSTile : TileService() {
             .setContentTitle(trainTimeTable.stationName)
             .setContentText("$upTrain / $downTrain")
             .setStyle(NotificationCompat.InboxStyle().also {
+
+                //次の時間の時刻表のとき？
+                if (trainTimeTable.isNextTimeTable) {
+                    hour += 1
+                }
 
                 //スコープ関数？なんかすごい便利
                 it.setBigContentTitle("${trainTimeTable.stationName}駅の${hour}時の時刻表")
