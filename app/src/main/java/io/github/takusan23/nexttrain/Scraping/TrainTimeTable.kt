@@ -112,6 +112,9 @@ class TrainTimeTable {
         var tmpType = ""
         var tmpFor = ""
 
+        //次の時間？一時的に
+        var tmpNextTime = 0
+
         val date = Calendar.getInstance()
         //平日・土曜・日曜に対応させる
         //祝日は無理だな
@@ -127,6 +130,13 @@ class TrainTimeTable {
                 parameter = "4"
             }
         }
+
+        //今の時間を出す
+        val hour = date.get(Calendar.HOUR_OF_DAY)
+        val minute = date.get(Calendar.MINUTE)
+        //  val hour = 17
+        //  val minute = 58
+
         //URLつなげる
         val uri = url.toUri().buildUpon()
         uri.appendQueryParameter("kind", parameter)
@@ -139,11 +149,6 @@ class TrainTimeTable {
         val tr = document.getElementsByTag("tr")
         tr.forEach {
             val trForeach = it
-            //今の時間を出す
-            val hour = date.get(Calendar.HOUR_OF_DAY)
-            val minute = date.get(Calendar.MINUTE)
-            //  val hour = 17
-            //  val minute = 58
             var id = "hh_${hour}"
             //0->24
             if (hour == 0) {
@@ -168,9 +173,23 @@ class TrainTimeTable {
                         //数字だけとった
                         trainTime = matcher.group()
 
-                        //この時間にはない
-                        //7:55 -> 8:00
-                        if ((trainTime.toInt()) <= minute) {
+                        //引き算して最も低い値が次の電車なのでは
+                        val tmp = (trainTime.toInt()) - minute
+                        //値が負の値になってる場合は手遅れ
+                        if (0 < tmp) {
+                            if (timeTemp > tmp) {
+                                timeTemp = tmp
+                                //一桁は先頭に0を入れる
+                                if (trainTime.length == 1) {
+                                    trainTime = "0$trainTime"
+                                }
+                                nextTrainTime = "${hour}:$trainTime"
+                                tmpFor = trainFor.text()
+                                tmpType = trainType.text()
+                            }
+                        } else if (nextTrainTime.isEmpty()) {
+                            //この時間にはない
+                            //7:55 -> 8:00
                             timeTemp = 100
                             //時間を足す
                             val id = "hh_${hour + 1}"
@@ -211,28 +230,11 @@ class TrainTimeTable {
                                     }
                                 }
                             }
-                        } else {
-                            //引き算して最も低い値が次の電車なのでは
-                            val tmp = (trainTime.toInt()) - minute
-                            //値が負の値になってる場合は手遅れ
-                            if (0 < tmp) {
-                                if (timeTemp > tmp) {
-                                    timeTemp = tmp
-                                    //一桁は先頭に0を入れる
-                                    if (trainTime.length == 1) {
-                                        trainTime = "0$trainTime"
-                                    }
-                                    nextTrainTime = "${hour}:$trainTime"
-                                    tmpFor = trainFor.text()
-                                    tmpType = trainType.text()
-                                }
-                            }
                         }
                     }
                 }
             }
         }
-
         //配列作る
         //縦の列
         // ・ ↓
@@ -262,10 +264,6 @@ class TrainTimeTable {
                 //行き先
                 val trainFor = it.getElementsByClass("trainFor").text()
 
-                //時間の分のところ、一桁のときは先頭に0をつける
-                if (time.length == 1) {
-                    time = "0$time"
-                }
                 //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
                 val pattern = Pattern.compile("[0-9０-９]+")
                 val matcher = pattern.matcher(time)
@@ -273,6 +271,12 @@ class TrainTimeTable {
                     //数字だけとった
                     time = matcher.group()
                 }
+
+                //時間の分のところ、一桁のときは先頭に0をつける
+                if (time.length == 1) {
+                    time = "0$time"
+                }
+
                 trainTimeList.add(time)
                 trainTypeList.add(type)
                 trainForList.add(trainFor)
