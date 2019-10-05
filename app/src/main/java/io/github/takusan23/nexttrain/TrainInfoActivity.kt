@@ -223,13 +223,13 @@ class TrainInfoActivity : AppCompatActivity() {
         //ViewPagerのカウント用
         var viewCount = 0
         for (count in 0 until activity_train_info_tab_layout.tabCount) {
+            viewCount += 1
             if (activity_train_info_tab_layout.getTabAt(count)?.text.toString() == hour.toString() + "時") {
-                viewCount += 1
                 //選択
                 activity_train_info_tab_layout.getTabAt(count)?.select()
-
+                val tmp = viewCount - 1
                 activity_train_info_viewpager.postDelayed({
-                    activity_train_info_viewpager.setCurrentItem(viewCount, true)
+                    activity_train_info_viewpager.setCurrentItem(tmp, true)
                 }, 100)
             }
         }

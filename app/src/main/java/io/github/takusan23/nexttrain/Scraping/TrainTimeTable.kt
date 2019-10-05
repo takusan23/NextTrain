@@ -244,17 +244,26 @@ class TrainTimeTable {
             val trainForList = arrayListOf<String>()
             item.forEach {
                 //時間
-                val time = it.getElementsByTag("dt")[0].text()
+                var time = it.getElementsByTag("dt")[0].text()
                 //特急・区間・各駅とか
                 val type = it.getElementsByClass("trainType").text()
                 //行き先
                 val trainFor = it.getElementsByClass("trainFor").text()
 
+                //時間の分のところ、一桁のときは先頭に0をつける
+                if (time.length == 1) {
+                    time = "0$time"
+                }
+                //正規表現で数字だけ出す（もしかしたら数字以外も入る可能性）
+                val pattern = Pattern.compile("[0-9０-９]+")
+                val matcher = pattern.matcher(time)
+                if (matcher.find()) {
+                    //数字だけとった
+                    time = matcher.group()
+                }
                 trainTimeList.add(time)
                 trainTypeList.add(type)
                 trainForList.add(trainFor)
-
-                // println("${hour}時 ${time}分  ${type} / ${trainFor}")
 
             }
             if (boolean) {
@@ -274,11 +283,19 @@ class TrainTimeTable {
 
         if (boolean) {
             //次の電車
+            //時間の分のところ、一桁のときは先頭に0をつける
+            if (nextTrainTime.length == 1) {
+                nextTrainTime = "0$nextTrainTime"
+            }
             upNextTime = nextTrainTime
             upTrainType = tmpType
             upTrainFor = tmpFor
         } else {
             //次の電車
+            //時間の分のところ、一桁のときは先頭に0をつける
+            if (nextTrainTime.length == 1) {
+                nextTrainTime = "0$nextTrainTime"
+            }
             downNextTime = nextTrainTime
             downTrainType = tmpType
             downTrainFor = tmpFor
